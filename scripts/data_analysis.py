@@ -57,12 +57,28 @@ def analyze_data(full_data):
             print("Column 'Dish Name' not found.")
             popular_dishes = pd.Series(dtype="int")  # Empty Series as fallback
 
-        # Count orders per session
-        sessions_to_orders = full_data.groupby("Session ID")["Order ID"].nunique()
+        # Aggregate sessions and orders
+        sessions_to_orders = full_data.groupby("Session ID").agg({"Order ID": "nunique"})
+        sessions_to_orders.reset_index(inplace=True)
+        sessions_to_orders.rename(columns={"Order ID": "Orders"}, inplace=True)
+        
         return popular_dishes, sessions_to_orders
     except Exception as e:
         print(f"An error occurred during analysis: {e}")
         raise
+
+def visualize_data(popular_dishes, sessions_to_orders):
+    # Bar plot for popular dishes
+    popular_dishes.plot(kind='bar', title='Top 10 Popular Dishes', figsize=(10, 6))
+    plt.xlabel('Dish Name')
+    plt.ylabel('Count')
+    plt.show()
+    
+    # Scatter plot for orders
+    plt.figure(figsize=(10, 6))
+    sns.scatterplot(x="Session ID", y="Orders", data=sessions_to_orders)
+    plt.title("Sessions vs Orders for Dishes")
+    plt.show()
 
         
 
